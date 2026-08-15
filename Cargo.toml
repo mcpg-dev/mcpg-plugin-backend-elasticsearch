@@ -1,0 +1,51 @@
+[package]
+name = "mcpg-plugin-backend-elasticsearch"
+version = "0.1.0-alpha.15"
+license = "Apache-2.0"
+edition = "2024"
+description = """
+Elasticsearch / OpenSearch backend binding plugin for mcpg. Exposes
+search/count/get/index/delete/bulk/msearch as MCP tools, dispatching
+to the ES REST API via reqwest (rustls-tls), with an index-name
+allowlist + path-injection guard, https-or-localhost base-URL
+constraint, DNS-rebinding/SSRF guard, and per-caller cred:// auth
+resolution. Mirrors the HTTP/SQL first-party backend shape.
+"""
+
+[lib]
+# cdylib: the .so the gateway's native_loader dlopens. rlib: in-tree
+# unit tests + the eager new() constructor.
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+cdylib-export = []
+# Declared empty so the SDK macro's static accessor doesn't trip
+# unexpected_cfgs; elasticsearch is consumed as a cdylib.
+static-firstparty = []
+# Gates the ES testcontainer suite so `cargo test --lib` stays offline.
+integration-tests = []
+
+[dependencies]
+mcpg-plugin-protocol = { git = "https://github.com/mcpg-dev/mcpg-plugin-protocol", tag = "v0.1.0-beta.13", version = "=0.1.0-beta.13" }
+mcpg-plugin-sdk = { git = "https://github.com/mcpg-dev/mcpg-plugin-sdk", tag = "v0.1.0-beta.13", version = "=0.1.0-beta.13", features = ["static-firstparty"] }
+async-trait = "0.1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+futures = "0.3"
+metrics = "0.24"
+# rustls-only — deny.toml bans openssl/native-tls. Same line as the
+# http backend minus "stream" (ES is request/response, not streamed).
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2.0"
+tokio = { version = "1", features = ["sync", "rt", "rt-multi-thread", "macros", "time"] }
+tracing = "0.1"
+url = "2"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "net", "io-util", "time"] }
+wiremock = "0.6"
+testcontainers = { version = "0.27", features = ["blocking"] }
+testcontainers-modules = { version = "0.15", features = ["elastic_search", "blocking"] }
+

@@ -1,0 +1,37 @@
+schema: mcpg.dev/plugin/v1
+id: dev.mcpg.backend.elasticsearch
+name: Elasticsearch Binding
+license: Apache-2.0
+description: |
+  An Elasticsearch / OpenSearch backend binding. Each binding declares
+  one operation (search / count / get / index / delete / bulk / msearch /
+  knn) against an operator-configured base URL + index allowlist and
+  exposes it as one MCP tool. The `knn` operation issues a vector
+  nearest-neighbour `_search` (the modern top-level `knn` clause) over a
+  `dense_vector` field for RAG / semantic search, taking the query
+  embedding as a `query_vector` argument (or a binding literal). The index travels as an allowlisted, path-injection-
+  guarded tool argument (or a binding default); write operations are gated
+  behind an explicit allow_writes flag. Dispatches over the ES REST API
+  via reqwest (rustls-tls) with an https-or-localhost base-URL constraint,
+  a DNS-rebinding / SSRF guard, a default-deny scripting guard, and
+  per-caller `cred://` auth resolution (ApiKey / Basic / Bearer); the
+  resolved auth secret never reaches logs or the reflected response
+  envelope.
+
+  A second `watch_strategy` entity (kind `elasticsearch_poll`) lets a
+  resource subscribe to index changes by POLLING. Each watcher carries
+  its own connection (`urls` / `auth` / `tls`) plus the `index` to watch
+  and a monotonic `cursor_field` to sort on (e.g. `@timestamp` or
+  `_seq_no`), with an optional scoping `query`. The plugin runs a sorted,
+  size-1 `_search` every `interval_ms` (default 60000, floored at 250 ms)
+  with a per-tick `timeout_ms` budget (default 10000), takes the top
+  hit's sort value (or the cursor-field leaf) as the cursor, and emits
+  `notifications/resources/updated` whenever it advances past the
+  previously-seen value (the first tick only establishes the baseline, so
+  a watcher never fires spuriously at startup). An empty `index` or
+  `cursor_field` is rejected at watch start.
+class: backend
+runtime: native-cdylib-v1
+protocol_version: "1.0"
+required_capabilities:
+  - network_outbound
