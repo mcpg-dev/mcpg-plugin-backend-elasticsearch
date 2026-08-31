@@ -169,6 +169,7 @@ impl ElasticsearchBackendPlugin {
                 resource: Some(format!("es-binding://{backend_name}")),
                 outcome: AuditOutcome::Failure,
                 request_id: Some(request_id.to_owned()),
+                upstream_request_id: None,
                 node_id: None,
                 details,
                 prev_event_hash: None,
