@@ -1,12 +1,12 @@
 [package]
 name = "mcpg-plugin-backend-elasticsearch"
-version = "0.1.0-alpha.32"
+version = "0.1.0-alpha.38"
 license = "Apache-2.0"
 edition = "2024"
 description = """
 Elasticsearch / OpenSearch backend binding plugin for mcpg. Exposes
 search/count/get/index/delete/bulk/msearch as MCP tools, dispatching
-to the ES REST API via reqwest (rustls-tls), with an index-name
+to the ES REST API via reqwest (rustls), with an index-name
 allowlist + path-injection guard, https-or-localhost base-URL
 constraint, DNS-rebinding/SSRF guard, and per-caller cred:// auth
 resolution. Mirrors the HTTP/SQL first-party backend shape.
@@ -27,15 +27,15 @@ static-firstparty = []
 integration-tests = []
 
 [dependencies]
-mcpg-plugin-protocol = { git = "https://github.com/mcpg-dev/mcpg-plugin-protocol", tag = "v0.1.0-beta.29", version = "=0.1.0-beta.29" }
-mcpg-plugin-sdk = { git = "https://github.com/mcpg-dev/mcpg-plugin-sdk", tag = "v0.1.0-beta.30", version = "=0.1.0-beta.30", features = ["static-firstparty"] }
+mcpg-plugin-protocol = { git = "https://github.com/mcpg-dev/mcpg-plugin-protocol", tag = "v0.1.0-beta.35", version = "=0.1.0-beta.35" }
+mcpg-plugin-sdk = { git = "https://github.com/mcpg-dev/mcpg-plugin-sdk", tag = "v0.1.0-beta.36", version = "=0.1.0-beta.36", features = ["static-firstparty"] }
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 futures = "0.3"
 metrics = "0.24"
 # rustls-only — deny.toml bans openssl/native-tls. Same line as the
 # http backend minus "stream" (ES is request/response, not streamed).
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2.0"
