@@ -370,9 +370,9 @@ cargo test -p mcpg-plugin-backend-elasticsearch \
     --features integration-tests --test integration -- --test-threads 1
 ```
 
-(needs Docker; runs in the `--config=integration` CI lane. The bundled
-ES 7.16 image has security disabled, so it exercises the `auth: none` HTTP
-path; the ES-8 https+auth contract is covered by the wiremock suite.)
+(needs Docker; the suite starts `elasticsearch:7.16.1` with security
+disabled, so it exercises the `auth: none` HTTP path; the ES-8 https+auth
+contract is covered by the wiremock suite.)
 
 ## Notes
 
