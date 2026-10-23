@@ -154,8 +154,9 @@ mcp:
       - name: docs.embed
         description: Embed the user query into a dense vector.
         backend:
-          kind: openai_embeddings   # illustrative — any embeddings binding
-          # ...
+          kind: openai_embedding    # any `*_embedding` binding
+          model: text-embedding-3-small
+        # result: { embeddings: [[…]], dimensions, usage }; embeddings[0] is the query_vector
 
       # 2. kNN-retrieve the nearest documents for that embedding.
       - name: docs.semantic_search
@@ -175,15 +176,20 @@ mcp:
         # caller passes: { "query_vector": <array of floats from docs.embed> }
 ```
 
-In a `kind: pipeline` binding the embedding step feeds the kNN step directly:
+An embedding backend cannot run as a pipeline step (its kinds are not
+`pipeline_capable`). In a `kind: pipeline` binding, call an embeddings API
+with an `http` step instead and feed its vector to the kNN step:
 
 ```yaml
       backend:
         kind: pipeline
         steps:
           - id: embed
-            kind: openai_embeddings
-            input_transform: "{ 'input': arguments.query }"
+            kind: http
+            url: "https://api.openai.com/v1/embeddings"
+            method: post
+            headers: { authorization: "Bearer ${env.OPENAI_API_KEY}" }
+            input_transform: "{ 'model': 'text-embedding-3-small', 'input': arguments.query }"
           - id: retrieve
             kind: elasticsearch
             operation: knn
@@ -192,7 +198,7 @@ In a `kind: pipeline` binding the embedding step feeds the kNN step directly:
             default_index: kb-docs
             auth: { kind: api_key, api_key: "${env.ES_API_KEY}" }
             knn: { field: embedding, k: 5, num_candidates: 100 }
-            input_transform: "{ 'query_vector': steps.embed.response.data[0].embedding }"
+            input_transform: "{ 'query_vector': steps.embed.output.response.json.data[0].embedding }"
 ```
 
 ## MCP surfaces & composition
