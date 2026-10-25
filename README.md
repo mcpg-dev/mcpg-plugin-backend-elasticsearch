@@ -51,7 +51,7 @@ tool (the `http`/`sql` envelope model). Dispatches over the ES REST API via
 | `max_request_bytes` | int | 4 MiB | Request body cap. |
 | `max_size` | int | `1000` | `size` ceiling. |
 | `max_from` | int | `10000` | `from` ceiling. |
-| `allow_private_backends` | bool | `false` | Allow private/loopback resolved addresses (test / in-cluster ES). |
+| `allow_private_backends` | bool | `gateway.server.allow_private_backends` | Allow private/loopback resolved addresses (test / in-cluster ES). The gateway sets it for every binding from `gateway.server.allow_private_backends`; a value in the binding is replaced. |
 
 ### Secret references
 
